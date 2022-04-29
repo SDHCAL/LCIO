@@ -5,6 +5,14 @@
 CMAKE_MINIMUM_REQUIRED( VERSION 3.14 FATAL_ERROR )
 ########################################################
 
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+# Download CMakeCM and include it as soon as possible
+include(GetCMakeMM)
+cmmm(VERSION "2.3" REPOSITORY "flagarde/CMakeMM" VERBOSITY VERBOSE)
+
+cmmm_modules_list(PROVIDER github REPOSITORY "SDHCAL/CMakeModules" BRANCH main DESTINATION "Modules")
+
 # project version
 SET( LCIO_VERSION_MAJOR 2 )
 SET( LCIO_VERSION_MINOR 17 )
@@ -52,8 +60,6 @@ configure_file (
 
 
 ### DEPENDENCIES ############################################################
-
-LIST( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake )
 
 option(LCIO_SET_RPATH   "Link libraries with built-in RPATH (run-time search path)" ON)
 option(BUILD_FORTRAN "Build FORTRAN code" OFF)
