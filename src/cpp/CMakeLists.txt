@@ -4,6 +4,8 @@
 # @author Jan Engels, DESY
 #################################
 
+if(BUILD_FORTRAN)
+
 SET( LCIO_CPPFORT_SRCS
   ./src/CPPFORT/HEPEVT.cc
   ./src/CPPFORT/lccah.cc
@@ -30,6 +32,18 @@ SET( LCIO_CPPFORT_SRCS
   ./src/CPPFORT/lcvtx.cc
   ./src/CPPFORT/lcwrt.cc
 )
+#---- special flags for cfortran code : --------
+SET_SOURCE_FILES_PROPERTIES(
+  ${LCIO_CPPFORT_SRCS} PROPERTIES
+  COMPILE_FLAGS "-Df2cFortran -Wno-unused"
+)
+# ----------------------------------------------------------------------------
+ADD_LIBRARY( lcioF77 STATIC ${LCIO_CPPFORT_SRCS} )
+INSTALL( TARGETS lcioF77 DESTINATION ${CMAKE_INSTALL_LIBDIR} )
+TARGET_LINK_LIBRARIES( lcioF77 lcio )
+
+ADD_CUSTOM_TARGET( lib DEPENDS lcioF77 )
+endif()
 
 SET( LCIO_IMPL_SRCS
   ./src/IMPL/AccessChecked.cc
@@ -227,7 +241,9 @@ if( LCIO_GENERATE_HEADERS )
   SET( IO_AID_HEADERS_DEP_LIST ${AID_HEADERS_LIST};${CXX_HEADERS_LIST} )
 
   # make source files depend on generated header files + aid files
-  SET_SOURCE_FILES_PROPERTIES( ${LCIO_CPPFORT_SRCS} PROPERTIES OBJECT_DEPENDS "${EVENT_AID_HEADERS_DEP_LIST};${IO_AID_HEADERS_DEP_LIST}" )
+  if(BUILD_FORTRAN)
+    SET_SOURCE_FILES_PROPERTIES( ${LCIO_CPPFORT_SRCS} PROPERTIES OBJECT_DEPENDS "${EVENT_AID_HEADERS_DEP_LIST};${IO_AID_HEADERS_DEP_LIST}" )
+  endif()
   SET_SOURCE_FILES_PROPERTIES( ${LCIO_IMPL_SRCS} PROPERTIES OBJECT_DEPENDS "${EVENT_AID_HEADERS_DEP_LIST}" )
   SET_SOURCE_FILES_PROPERTIES( ${LCIO_IOIMPL_SRCS} PROPERTIES OBJECT_DEPENDS "${IO_AID_HEADERS_DEP_LIST}" )
   # ----------------------------------------------------------------------------
@@ -250,12 +266,7 @@ endif()
 #ADD_DEFINITIONS( "-Wall -ansi -pedantic" )
 #ADD_DEFINITIONS( "-Wno-long-long -fno-strict-aliasing" )
 
-#---- special flags for cfortran code : --------
-SET_SOURCE_FILES_PROPERTIES(
-  ${LCIO_CPPFORT_SRCS} PROPERTIES
-  COMPILE_FLAGS "-Df2cFortran -Wno-unused"
-)
-# ----------------------------------------------------------------------------
+
 
 
 
@@ -282,9 +293,8 @@ INSTALL_DIRECTORY( ${LCIO_AID_HEADERS_OUTPUT_DIR}/ DESTINATION include )
 
 
 
-# ------- libraries lcio + lcioF77 -------------------------------------------
-ADD_LIBRARY( lcioF77 STATIC ${LCIO_CPPFORT_SRCS} )
-INSTALL( TARGETS lcioF77 DESTINATION ${CMAKE_INSTALL_LIBDIR} )
+# ------- libraries lcio -------------------------------------------
+
 
 ADD_SHARED_LIBRARY( lcio
   ${LCIO_IMPL_SRCS}
@@ -297,9 +307,8 @@ INSTALL_SHARED_LIBRARY( lcio DESTINATION ${CMAKE_INSTALL_LIBDIR} )
 
 TARGET_LINK_LIBRARIES( lcio ${CMAKE_THREAD_LIBS_INIT} )
 TARGET_LINK_LIBRARIES( lcio ${SIO_LIBRARIES} )
-TARGET_LINK_LIBRARIES( lcioF77 lcio )
 
-ADD_CUSTOM_TARGET( lib DEPENDS lcio lcioF77 )
+ADD_CUSTOM_TARGET( lib DEPENDS lcio )
 # ----------------------------------------------------------------------------
 
 
@@ -445,55 +454,56 @@ IF( BUILD_ROOTDICT )
 ENDIF()
 # ----------------------------------------------------------------------------
 
+if(BUILD_LCIO_STANDARD_EXAMPLES OR BUILD_LCIO_EXAMPLES)
+  # ==== add examples from the EXAMPLES directory ==============================
+  ADD_CUSTOM_TARGET( examples )
+  MACRO( ADD_LCIO_EXAMPLE file )
+    ADD_EXECUTABLE( bin_${file} ./src/EXAMPLE/${file}.cc )
+    ADD_DEPENDENCIES( examples bin_${file} )
+    #MESSAGE( STATUS "ADD_LCIO_EXAMPLE: ${file} ./src/EXAMPLE/${file}.cc" )
+    SET_TARGET_PROPERTIES( bin_${file} PROPERTIES OUTPUT_NAME ${file} )
+    TARGET_LINK_LIBRARIES( bin_${file} lcio )
+    INSTALL( TARGETS bin_${file} DESTINATION bin )
+  ENDMACRO()
+  
+  if(BUILD_LCIO_STANDARD_EXAMPLES)
+    ADD_LCIO_EXAMPLE( simjob )
+    ADD_LCIO_EXAMPLE( anajob )
+    ADD_LCIO_EXAMPLE( recjob )
+    ADD_LCIO_EXAMPLE( dumpevent )
+    ADD_LCIO_EXAMPLE( copyfix )
+    ADD_LCIO_EXAMPLE( stdhepjob )
+    ADD_LCIO_EXAMPLE( stdhepjob_new )
+    ADD_LCIO_EXAMPLE( addRandomAccess )
+    ADD_LCIO_EXAMPLE( lcio_event_counter )
+    ADD_LCIO_EXAMPLE( lcio_check_col_elements )
+    ADD_LCIO_EXAMPLE( lcio_split_file ) 
+    ADD_LCIO_EXAMPLE( lcio_merge_files ) 
+    ADD_LCIO_EXAMPLE( readmcparticles ) 
+    ADD_LCIO_EXAMPLE( lcio_performance )
+    ADD_LCIO_EXAMPLE( lcio_parallel_read ) 
+    ADD_LCIO_EXAMPLE( lcio_parallel_processing )
+  endif()
 
+  IF( BUILD_ROOTDICT )
+    ADD_LCIO_EXAMPLE( lcio_io_benchmark )
+    TARGET_LINK_LIBRARIES( bin_lcio_io_benchmark ${ROOT_LIBRARIES} )
+  ENDIF()
 
+  IF( BUILD_LCIO_EXAMPLES )
+    ADD_LCIO_EXAMPLE( lcrtrelation )
+    ADD_LCIO_EXAMPLE( readcalibration )
 
-# ==== add examples from the EXAMPLES directory ==============================
-ADD_CUSTOM_TARGET( examples )
-MACRO( ADD_LCIO_EXAMPLE file )
-  ADD_EXECUTABLE( bin_${file} ./src/EXAMPLE/${file}.cc )
-  ADD_DEPENDENCIES( examples bin_${file} )
-  #MESSAGE( STATUS "ADD_LCIO_EXAMPLE: ${file} ./src/EXAMPLE/${file}.cc" )
-  SET_TARGET_PROPERTIES( bin_${file} PROPERTIES OUTPUT_NAME ${file} )
-  TARGET_LINK_LIBRARIES( bin_${file} lcio )
-  INSTALL( TARGETS bin_${file} DESTINATION bin )
-ENDMACRO()
-
-ADD_LCIO_EXAMPLE( simjob )
-ADD_LCIO_EXAMPLE( anajob )
-ADD_LCIO_EXAMPLE( recjob )
-ADD_LCIO_EXAMPLE( dumpevent )
-ADD_LCIO_EXAMPLE( copyfix )
-ADD_LCIO_EXAMPLE( stdhepjob )
-ADD_LCIO_EXAMPLE( stdhepjob_new )
-ADD_LCIO_EXAMPLE( addRandomAccess )
-ADD_LCIO_EXAMPLE( lcio_event_counter )
-ADD_LCIO_EXAMPLE( lcio_check_col_elements )
-ADD_LCIO_EXAMPLE( lcio_split_file ) 
-ADD_LCIO_EXAMPLE( lcio_merge_files ) 
-ADD_LCIO_EXAMPLE( readmcparticles ) 
-ADD_LCIO_EXAMPLE( lcio_performance )
-ADD_LCIO_EXAMPLE( lcio_parallel_read ) 
-ADD_LCIO_EXAMPLE( lcio_parallel_processing ) 
-
-IF( BUILD_ROOTDICT )
-  ADD_LCIO_EXAMPLE( lcio_io_benchmark )
-  TARGET_LINK_LIBRARIES( bin_lcio_io_benchmark ${ROOT_LIBRARIES} )
-ENDIF()
-
-IF( BUILD_LCIO_EXAMPLES )
-  ADD_LCIO_EXAMPLE( lcrtrelation )
-  ADD_LCIO_EXAMPLE( readcalibration )
-
-## do not build the out-of data lsh example
-##  # LCIO SHELL needs curses and readline libraries
-##  FIND_PACKAGE( Curses QUIET )
-##  FIND_LIBRARY( READLINE_LIBRARY readline PATHS /usr/local/lib64 /usr/local/lib )
-##  IF( CURSES_LIBRARY AND READLINE_LIBRARY )
-##    ADD_LCIO_EXAMPLE( lsh )
-##    TARGET_LINK_LIBRARIES( bin_lsh ${CURSES_LIBRARY} ${READLINE_LIBRARY} )
-##  ELSE()
-##    MESSAGE( STATUS "cannot build lsh: curses and/or readline libraries not found" )
-##  ENDIF()
-ENDIF()
+  ## do not build the out-of data lsh example
+  ##  # LCIO SHELL needs curses and readline libraries
+  ##  FIND_PACKAGE( Curses QUIET )
+  ##  FIND_LIBRARY( READLINE_LIBRARY readline PATHS /usr/local/lib64 /usr/local/lib )
+  ##  IF( CURSES_LIBRARY AND READLINE_LIBRARY )
+  ##    ADD_LCIO_EXAMPLE( lsh )
+  ##    TARGET_LINK_LIBRARIES( bin_lsh ${CURSES_LIBRARY} ${READLINE_LIBRARY} )
+  ##  ELSE()
+  ##    MESSAGE( STATUS "cannot build lsh: curses and/or readline libraries not found" )
+  ##  ENDIF()
+  ENDIF()
+endif()
 # ============================================================================

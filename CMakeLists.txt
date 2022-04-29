@@ -2,7 +2,7 @@
 # cmake file for building LCIO
 # @author Frank Gaede, DESY
 # @author Jan Engels, DESY
-CMAKE_MINIMUM_REQUIRED( VERSION 2.8 FATAL_ERROR )
+CMAKE_MINIMUM_REQUIRED( VERSION 3.14 FATAL_ERROR )
 ########################################################
 
 
@@ -58,6 +58,7 @@ configure_file (
 LIST( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake )
 
 option(LCIO_SET_RPATH   "Link libraries with built-in RPATH (run-time search path)" ON)
+option(BUILD_FORTRAN "Build FORTRAN code" OFF)
 
 #FIND_PACKAGE( ILCUTIL COMPONENTS ILCSOFT_CMAKE_MODULES REQUIRED )
 
@@ -274,6 +275,12 @@ endif()
 #OPTION( BUILD_LCIO_TESTS "Set to ON to build LCIO tests under src/cpp/src/TESTS" OFF )
 
 OPTION( BUILD_LCIO_EXAMPLES "Set to ON to build LCIO examples" ON )
+OPTION( BUILD_LCIO_STANDARD_EXAMPLES "Set to ON to build LCIO examples" ON )
+OPTION( BUILD_TESTS "Set to ON to build LCIO examples" ON )
+if(NOT BUILD_LCIO_STANDARD_EXAMPLES)
+  set(BUILD_TESTS OFF)
+endif()
+
 
 # lcio library
 ADD_SUBDIRECTORY( ./src/cpp lcio )
@@ -288,7 +295,9 @@ ENDIF()
 
 
 # directory containing lcio tests
-ADD_SUBDIRECTORY( ./tests )
+if(BUILD_TESTS)
+  ADD_SUBDIRECTORY( ./tests )
+endif()
 
 
 ### DOCUMENTATION ###########################################################
@@ -307,6 +316,9 @@ DISPLAY_STD_VARIABLES()
 MESSAGE( STATUS "BUILD_LCIO_EXAMPLES = ${BUILD_LCIO_EXAMPLES}" )
 MESSAGE( STATUS "BUILD_F77_TESTJOBS = ${BUILD_F77_TESTJOBS}" )
 MESSAGE( STATUS "BUILD_ROOTDICT = ${BUILD_ROOTDICT}" )
+MESSAGE( STATUS "BUILD_LCIO_EXAMPLES = ${BUILD_LCIO_EXAMPLES}" )
+MESSAGE( STATUS "BUILD_LCIO_STANDARD_EXAMPLES = ${BUILD_LCIO_STANDARD_EXAMPLES}" )
+MESSAGE( STATUS "BUILD_TESTS = ${BUILD_TESTS}" )
 MESSAGE( STATUS "INSTALL_JAR = ${INSTALL_JAR}" )
 MESSAGE( STATUS "LCIO_JAVA_USE_MAVEN = ${LCIO_JAVA_USE_MAVEN}" )
 MESSAGE( STATUS "SIO_PRINT_DEBUG = ${SIO_PRINT_DEBUG}" )
