@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 #if defined(__linux) || defined(__CYGWIN__) || defined(__APPLE_CC__)
 #include <netinet/in.h>
