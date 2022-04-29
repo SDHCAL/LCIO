@@ -1,0 +1,24 @@
+---
+name: Windows
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  job:
+    name: Windows
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+
+    - name: Configure
+      run: mkdir build && cd build && cmake -DBUILD_ROOT_INTERFACE=OFF -DCMAKE_INSTALL_PREFIX=../bin ..
+    - name: Build
+      run: cmake --build build

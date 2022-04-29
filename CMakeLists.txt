@@ -5,16 +5,14 @@
 CMAKE_MINIMUM_REQUIRED( VERSION 3.14 FATAL_ERROR )
 ########################################################
 
-
-
-# project name
-PROJECT( LCIO )
-include(GNUInstallDirs)
-
 # project version
 SET( LCIO_VERSION_MAJOR 2 )
 SET( LCIO_VERSION_MINOR 17 )
 SET( LCIO_VERSION_PATCH 0 )
+
+# project name
+PROJECT( LCIO VERSION "${LCIO_VERSION_MAJOR}.${LCIO_VERSION_MINOR}.${LCIO_VERSION_PATCH}" LANGUAGES C CXX)
+include(GNUInstallDirs)
 
 ### set correct LCIO version in relevant files  ############################
 
