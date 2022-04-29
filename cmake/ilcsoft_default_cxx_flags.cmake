@@ -7,6 +7,10 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "^(Apple)?Clang$")
   set ( COMPILER_FLAGS ${COMPILER_FLAGS} -Winconsistent-missing-override -Wno-c++1z-extensions -Wheader-hygiene )
 endif()
 
+IF( "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+  SET( CMAKE_CXX_FLAGS "/permissive- ${CMAKE_CXX_FLAGS}" )
+ENDIF()
+
 FOREACH( FLAG ${COMPILER_FLAGS} )
   STRING(REPLACE "-" "_" FLAG_WORD ${FLAG} )
   STRING(REPLACE "+" "P" FLAG_WORD ${FLAG_WORD} )
