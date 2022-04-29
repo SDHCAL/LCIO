@@ -19,7 +19,9 @@
 #include <_types/_uint8_t.h>
 #include <sys/_types/_int16_t.h>
 #include <sys/_types/_int64_t.h>
-#else
+#elif defined(_WIN32)
+#include <Windows.h>
+#else 
 #include <stdint.h>
 #endif
 
