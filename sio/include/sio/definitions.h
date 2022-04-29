@@ -1,5 +1,7 @@
 #pragma once
-
+#ifdef _WIN32
+#define NOMINMAX
+#endif
 // -- std headers
 #include <iostream>
 #include <cctype>
