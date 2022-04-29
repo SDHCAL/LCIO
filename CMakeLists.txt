@@ -22,6 +22,8 @@ SET( LCIO_VERSION_PATCH 0 )
 PROJECT( LCIO VERSION "${LCIO_VERSION_MAJOR}.${LCIO_VERSION_MINOR}.${LCIO_VERSION_PATCH}" LANGUAGES C CXX)
 include(GNUInstallDirs)
 
+SET(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+
 ### set correct LCIO version in relevant files  ############################
 
 configure_file (
