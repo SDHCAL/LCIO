@@ -166,12 +166,12 @@ eval $*
 ENDIF()
 
 # Deal with SIO
-FIND_PACKAGE( SIO QUIET )
+#FIND_PACKAGE( SIO QUIET )
 
-IF( NOT SIO_FOUND )
-  MESSAGE( STATUS "SIO not found on your system. Using builtin sio" )
+#IF( NOT SIO_FOUND )
+#  MESSAGE( STATUS "SIO not found on your system. Using builtin sio" )
   ADD_SUBDIRECTORY( sio )
-ENDIF()
+#ENDIF()
 
 MESSAGE( STATUS "Using SIO (${SIO_VERSION})" )
 MESSAGE( STATUS "SIO library: ${SIO_LIBRARIES}" )
